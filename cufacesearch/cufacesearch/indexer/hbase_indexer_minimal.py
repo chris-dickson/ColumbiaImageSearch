@@ -212,7 +212,17 @@ class HBaseIndexerMinimal(ConfReader):
     """
     super(HBaseIndexerMinimal, self).read_conf()
     # HBase conf
-    self.hbase_host = str(self.get_required_param('host'))
+    hostpieces = str(self.get_required_param('host')).split(":")
+    if (hostpieces.len == 2):
+      self.hbase_host = hostpieces[0]
+      self.hbase_port = hostpieces[1]
+    elif (hostpieces.len == 3):
+      self.hbase_host = hostpieces[0] + ":" + hostpieces[1]
+      self.hbase_port = hostpieces[2]
+    else:
+      self.hbase_host = str(self.get_required_param('host')).split(":")
+      self.hbase_port = 9090
+
     # Get table of images and updates
     self.table_sha1infos_name = str(self.get_required_param('table_sha1infos'))
     # Optional for "IN" indexer for example
@@ -252,7 +262,7 @@ class HBaseIndexerMinimal(ConfReader):
         sys.stdout.flush()
       time.sleep(sleep_time)
       self.pool = happybase.ConnectionPool(timeout=60000, size=self.nb_threads,
-                                           host=self.hbase_host, transport=self.transport_type)
+                                           host=self.hbase_host, transport=self.transport_type, port=self.hbase_port)
       if self.verbose > 1:
         msg = "[{}.refresh_hbase_conn: log] Refreshed connection pool in {}s."
         print(msg.format(self.pp, time.time() - start_refresh))
@@ -293,7 +303,7 @@ class HBaseIndexerMinimal(ConfReader):
     # try:
     if conn is None:
       from happybase.connection import Connection
-      conn = Connection(self.hbase_host)
+      conn = Connection(host=self.hbase_host, port=self.hbase_port)
     try:
       # as no exception would be raised if table does not exist...
       table = conn.table(table_name)
