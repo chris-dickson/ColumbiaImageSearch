@@ -213,10 +213,10 @@ class HBaseIndexerMinimal(ConfReader):
     super(HBaseIndexerMinimal, self).read_conf()
     # HBase conf
     hostpieces = str(self.get_required_param('host')).split(":")
-    if (hostpieces.len == 2):
+    if (len(hostpieces) == 2):
       self.hbase_host = hostpieces[0]
       self.hbase_port = hostpieces[1]
-    elif (hostpieces.len == 3):
+    elif (len(hostpieces) == 3):
       self.hbase_host = hostpieces[0] + ":" + hostpieces[1]
       self.hbase_port = hostpieces[2]
     else:
